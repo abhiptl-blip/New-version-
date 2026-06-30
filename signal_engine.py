@@ -379,7 +379,7 @@ def generate_signal(
 
     if latest["atr"] < recent_atr * 0.70:
 
-        score -= 25
+        score -= 15
 
         reasons.append(
             "Low Volatility Market"
