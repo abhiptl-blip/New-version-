@@ -70,17 +70,6 @@ def evaluate_signals(current_df):
         if candle_time < expiry:
             continue
 
-        pair = item.get("pair")
-        timeframe = item.get("timeframe")
-
-        latest_close = get_latest_close(
-            pair,
-            timeframe
-        )
-
-        if latest_close is None:
-            continue
-
         signal = item.get("signal")
         entry = item.get("entry_price")
 
