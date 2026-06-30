@@ -12,6 +12,9 @@ def log_signal(
     entry_price
 ):
 
+    if data.get("signal") == "AVOID":
+    return
+
     if not os.path.exists(LOG_FILE):
 
         with open(LOG_FILE, "w") as f:
