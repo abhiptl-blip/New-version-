@@ -1,0 +1,8 @@
+Flask
+gunicorn
+requests
+pandas
+ta
+numpy
+pytz
+python-dateutil
