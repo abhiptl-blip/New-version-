@@ -424,7 +424,22 @@ def generate_signal(
         "confidence": confidence,
         "trend": trend,
         "score": score,
+
+        "ema20": float(latest["ema20"]),
+        "ema50": float(latest["ema50"]),
+        "ema200": float(latest["ema200"]),
+
+        "rsi": float(latest["rsi"]),
+
+        "macd": float(latest["macd"]),
+        "macd_signal": float(latest["macd_signal"]),
+
+        "adx": float(latest["adx"]),
+
+        "atr": float(latest["atr"]),
+
         "support": sr["support"],
         "resistance": sr["resistance"],
+
         "reasons": reasons[:10]
     }
