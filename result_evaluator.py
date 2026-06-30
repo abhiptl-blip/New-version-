@@ -49,7 +49,11 @@ def evaluate_signals(current_df):
 
     updated = False
 
-    now = datetime.utcnow()
+    latest_candle = current_df.iloc[-1]
+
+    candle_time = latest_candle["time"].to_pydatetime()
+
+    latest_close = float(latest_candle["close"])
 
     for item in history:
 
