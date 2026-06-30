@@ -68,7 +68,7 @@ def evaluate_signals(current_df):
         expiry = datetime.fromisoformat(expiry)
 
         if candle_time < expiry:
-                continue
+            continue
 
         pair = item.get("pair")
         timeframe = item.get("timeframe")
