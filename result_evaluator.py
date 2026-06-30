@@ -39,7 +39,7 @@ def get_latest_close(pair, timeframe):
     return float(values[-1]["close"])
 
 
-def evaluate_signals():
+def evaluate_signals(current_df):
 
     if not os.path.exists(LOG_FILE):
         return
