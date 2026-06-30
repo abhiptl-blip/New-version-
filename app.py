@@ -138,7 +138,9 @@ def signal():
             .iloc[-1]["close"]
         )
 
-        evaluate_signals()
+        evaluate_signals(
+            market_data["current"]
+        )
 
         log_signal(
             result,
