@@ -363,7 +363,7 @@ def generate_signal(
 
     if adx < 20:
 
-        score -= 30
+        score -= 20
 
         reasons.append(
             "Weak Trend (Low ADX)"
