@@ -25,7 +25,7 @@ def log_signal(
         "time": datetime.utcnow().isoformat(),
 
         "pair": pair,
-        
+
         "timeframe": timeframe,
 
         "signal": data.get("signal"),
@@ -38,9 +38,24 @@ def log_signal(
 
         "score": data.get("score"),
 
+        "ema20": data.get("ema20"),
+        "ema50": data.get("ema50"),
+        "ema200": data.get("ema200"),
+
+        "rsi": data.get("rsi"),
+
+        "macd": data.get("macd"),
+        "macd_signal": data.get("macd_signal"),
+
+        "adx": data.get("adx"),
+
+        "atr": data.get("atr"),
+
         "support": data.get("support"),
 
         "resistance": data.get("resistance"),
+
+        "reasons": data.get("reasons"),
 
         "result": "PENDING"
     })
