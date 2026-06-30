@@ -30,8 +30,12 @@ def log_signal(
                 minutes=1 if timeframe == "1min" else 5
             )
         ).isoformat(),
+
+        "expiry_interval": timeframe,
         
         "pair": pair,
+
+        "symbol": pair,
 
         "timeframe": timeframe,
 
