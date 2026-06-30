@@ -103,13 +103,4 @@ def evaluate_signals():
     if updated:
 
         with open(LOG_FILE, "w") as f:
-            json.dump(history, f, indent=2)                item["result"] = "WIN"
-            else:
-                item["result"] = "LOSS"
-
-            updated = True
-
-    if updated:
-
-        with open(LOG_FILE, "w") as f:
             json.dump(history, f, indent=2)
