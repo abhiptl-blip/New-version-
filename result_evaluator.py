@@ -1,42 +1,9 @@
 import json
 import os
-import requests
 
 from datetime import datetime
 
-from config import API_KEY
-
 LOG_FILE = "data/signals_history.json"
-
-BASE_URL = "https://api.twelvedata.com/time_series"
-
-
-def get_latest_close(pair, timeframe):
-
-    interval = "1min" if timeframe == "1min" else "5min"
-
-    response = requests.get(
-        BASE_URL,
-        params={
-            "symbol": pair,
-            "interval": interval,
-            "outputsize": 2,
-            "apikey": API_KEY,
-            "format": "JSON"
-        },
-        timeout=20
-    )
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    if "values" not in data:
-        return None
-
-    values = list(reversed(data["values"]))
-
-    return float(values[-1]["close"])
 
 
 def evaluate_signals(current_df):
