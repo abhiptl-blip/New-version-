@@ -1,0 +1,220 @@
+from flask import (
+    Flask,
+    render_template,
+    jsonify,
+    request
+)
+
+from data_fetcher import (
+    get_market_data,
+    market_is_open
+)
+
+from signal_engine import (
+    generate_signal
+)
+
+from request_tracker import (
+    can_make_request,
+    record_request,
+    get_status
+)
+
+from trade_logger import log_signal
+from result_evaluator import evaluate_signals
+from stats import get_stats
+import json
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def home():
+
+    return render_template(
+        "index.html"
+    )
+
+
+@app.route("/health")
+def health():
+
+    return jsonify({
+        "status": "healthy"
+    })
+
+
+@app.route("/api/requests")
+def request_status():
+
+    return jsonify(
+        get_status()
+    )
+
+
+@app.route("/api/signal")
+def signal():
+
+    pair = request.args.get(
+        "pair",
+        "EUR/USD"
+    )
+
+    timeframe = request.args.get(
+        "timeframe",
+        "1min"
+    )
+
+    if not can_make_request():
+
+        return jsonify({
+
+            "signal":
+            "DAILY LIMIT CROSSED",
+
+            "confidence": 0,
+
+            "trend":
+            "STOPPED",
+
+            "score": 0,
+
+            "support": None,
+
+            "resistance": None,
+
+            "remaining": 0,
+
+            "reasons": [
+                "Daily API Limit Reached"
+            ]
+        })
+
+    try:
+
+        market_data = (
+            get_market_data(
+                pair,
+                timeframe
+            )
+        )
+
+        if not market_is_open(
+            market_data["current"],
+            timeframe
+        ):
+
+            return jsonify({
+
+                "signal": "MARKET CLOSED",
+
+                "confidence": 0,
+
+                "trend": "CLOSED",
+
+                "score": 0,
+
+                "support": None,
+
+                "resistance": None,
+
+                "remaining":
+                get_status()["remaining"],
+
+                "reasons": [
+                    "Forex Market Closed"
+                ]
+        })
+
+        result = (
+            generate_signal(
+                market_data["current"],
+                market_data["higher"]
+            )
+        )
+
+        entry_price = float(
+            market_data["current"]
+            .iloc[-1]["close"]
+        )
+
+        evaluate_signals(
+            entry_price
+        )
+
+        log_signal(
+            result,
+            pair,
+            timeframe,
+            entry_price
+        )
+
+        record_request()
+
+        status = get_status()
+
+        result["remaining"] = (
+            status["remaining"]
+        )
+
+        result["used"] = (
+            status["used"]
+        )
+
+        result["limit"] = (
+            status["limit"]
+        )
+
+        return jsonify(
+            result
+        )
+
+    except Exception as e:
+
+        return jsonify({
+
+            "signal": "ERROR",
+
+            "confidence": 0,
+
+            "trend": "UNKNOWN",
+
+            "score": 0,
+
+            "support": None,
+
+            "resistance": None,
+
+            "remaining":
+            get_status()["remaining"],
+
+            "error": str(e)
+
+        }), 500
+
+@app.route("/api/stats")
+def stats():
+
+    return jsonify(
+        get_stats()
+    )
+
+@app.route("/api/history")
+def history():
+
+    with open(
+        "data/signals_history.json",
+        "r"
+    ) as f:
+
+        return jsonify(
+            json.load(f)
+        )
+
+if __name__ == "__main__":
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=False
+    )
