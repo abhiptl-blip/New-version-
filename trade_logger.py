@@ -24,6 +24,13 @@ def log_signal(
 
         "time": datetime.utcnow().isoformat(),
 
+        "expiry_time": (
+            datetime.utcnow() +
+            timedelta(
+                minutes=1 if timeframe == "1min" else 5
+            )
+        ).isoformat(),
+        
         "pair": pair,
 
         "timeframe": timeframe,
