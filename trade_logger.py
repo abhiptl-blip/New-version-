@@ -13,7 +13,7 @@ def log_signal(
 ):
 
     if data.get("signal") == "AVOID":
-    return
+        return
 
     if not os.path.exists(LOG_FILE):
 
