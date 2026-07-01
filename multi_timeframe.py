@@ -49,7 +49,7 @@ def get_multi_timeframe_score(
         and higher_trend == "Bullish"
     ):
 
-        score += 20
+        score += 25
 
         reasons.append(
             "MTF Bullish Alignment"
@@ -60,7 +60,7 @@ def get_multi_timeframe_score(
         and higher_trend == "Bearish"
     ):
 
-        score -= 20
+        score -= 25
 
         reasons.append(
             "MTF Bearish Alignment"
@@ -73,10 +73,10 @@ def get_multi_timeframe_score(
         )
 
         if current_trend == "Bullish":
-            score -= 10
+            score -= 15
 
         elif current_trend == "Bearish":
-            score += 10
+            score += 15
 
     return {
         "score": score,
