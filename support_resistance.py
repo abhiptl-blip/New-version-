@@ -5,17 +5,13 @@ LOOKBACK = 20
 
 
 def get_recent_support(df):
-
-    lows = df["low"].tail(LOOKBACK)
-
-    return float(lows.min())
+    lows = df["low"].tail(20)
+    return float(lows.quantile(0.2))
 
 
 def get_recent_resistance(df):
-
-    highs = df["high"].tail(LOOKBACK)
-
-    return float(highs.max())
+    highs = df["high"].tail(20)
+    return float(highs.quantile(0.8))
 
 
 def distance_from_support(price, support):
