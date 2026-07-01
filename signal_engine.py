@@ -124,33 +124,53 @@ def generate_signal(
 
     # EMA Trend
 
-    if (
-        latest["ema20"]
-        > latest["ema50"]
-        > latest["ema200"]
-    ):
+    ema20 = latest["ema20"]
+    ema50 = latest["ema50"]
+    ema200 = latest["ema200"]
 
-        score += 25
+    if ema20 > ema50 > ema200:
+
+        gap = ema20 - ema50
+
+        if gap > latest["atr"] * 0.30:
+
+            score += 30
+
+            reasons.append(
+                "Strong Uptrend"
+            )
+
+        else:
+
+            score += 20
+
+            reasons.append(
+                "Weak Uptrend"
+            )
 
         trend = "Bullish"
 
-        reasons.append(
-            "Strong Uptrend"
-        )
+    elif ema20 < ema50 < ema200:
 
-    elif (
-        latest["ema20"]
-        < latest["ema50"]
-        < latest["ema200"]
-    ):
+        gap = ema50 - ema20
 
-        score -= 25
+        if gap > latest["atr"] * 0.30:
+
+            score -= 30
+
+            reasons.append(
+                "Strong Downtrend"
+            )
+
+        else:
+
+            score -= 20
+
+            reasons.append(
+                "Weak Downtrend"
+            )
 
         trend = "Bearish"
-
-        reasons.append(
-            "Strong Downtrend"
-        )
 
     # RSI
 
