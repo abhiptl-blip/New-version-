@@ -6,6 +6,46 @@ from datetime import datetime
 LOG_FILE = "data/signals_history.json"
 
 
+def candle_time_match(candle_time, expiry_time, timeframe):
+
+    if timeframe == "1min":
+
+        return (
+            candle_time.year == expiry_time.year
+            and candle_time.month == expiry_time.month
+            and candle_time.day == expiry_time.day
+            and candle_time.hour == expiry_time.hour
+            and candle_time.minute == expiry_time.minute
+        )
+
+    return (
+
+        candle_time.year == expiry_time.year
+        and candle_time.month == expiry_time.month
+        and candle_time.day == expiry_time.day
+        and candle_time.hour == expiry_time.hour
+        and (candle_time.minute // 5)
+        == (expiry_time.minute // 5)
+
+    )
+
+
+def get_expiry_close(current_df, expiry_time, timeframe):
+
+    for _, row in current_df.iterrows():
+
+        candle_time = row["time"]
+
+        if candle_time_match(
+            candle_time,
+            expiry_time,
+            timeframe
+        ):
+
+            return float(row["close"])
+
+    return None
+
 def evaluate_signals(current_df):
 
     if not os.path.exists(LOG_FILE):
@@ -16,11 +56,7 @@ def evaluate_signals(current_df):
 
     updated = False
 
-    latest_candle = current_df.iloc[-1]
-
-    candle_time = latest_candle["time"].to_pydatetime()
-
-    latest_close = float(latest_candle["close"])
+    latest_candle_time = current_df.iloc[-1]["time"]
 
     for item in history:
 
@@ -34,29 +70,41 @@ def evaluate_signals(current_df):
 
         expiry = datetime.fromisoformat(expiry)
 
-        if candle_time < expiry:
+        # Expiry candle abhi close nahi hui
+        if latest_candle_time < expiry:
             continue
 
-        signal = item.get("signal")
-        entry = item.get("entry_price")
+        expiry_close = get_expiry_close(
+            current_df,
+            expiry,
+            item["timeframe"]
+        )
+
+        if expiry_close is None:
+            continue
+
+        signal = item["signal"]
+        entry = float(item["entry_price"])
 
         if signal == "CALL":
 
-            item["result"] = (
-                "WIN"
-                if latest_close > entry
-                else "LOSS"
-            )
+            if expiry_close > entry:
+                item["result"] = "WIN"
+            else:
+                item["result"] = "LOSS"
+
+            item["exit_price"] = expiry_close
 
             updated = True
 
         elif signal == "PUT":
 
-            item["result"] = (
-                "WIN"
-                if latest_close < entry
-                else "LOSS"
-            )
+            if expiry_close < entry:
+                item["result"] = "WIN"
+            else:
+                item["result"] = "LOSS"
+
+            item["exit_price"] = expiry_close
 
             updated = True
 
