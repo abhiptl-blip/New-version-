@@ -24,14 +24,14 @@ def log_signal(result, pair, timeframe, entry_price, current_df):
         "time": datetime.utcnow().isoformat(),
 
 
-    last_candle = current_df.iloc[-1]["time"]
+        last_candle = current_df.iloc[-1]["time"]
 
-    if timeframe == "1min":
-        expiry_time = last_candle + timedelta(minutes=1)
-    else:
-        expiry_time = last_candle + timedelta(minutes=5)
+        if timeframe == "1min":
+            expiry_time = last_candle + timedelta(minutes=1)
+        else:
+            expiry_time = last_candle + timedelta(minutes=5)
 
-    expiry_time = expiry_time.replace(second=0, microsecond=0)
+        expiry_time = expiry_time.replace(second=0, microsecond=0)
 
         ).isoformat(),
 
