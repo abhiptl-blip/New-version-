@@ -81,6 +81,8 @@ def fetch_candles(
 
     df["time"] = pd.to_datetime(df["time"])
 
+    print(df.tail(3)[["time", "close"]])
+
     return df
 
 
@@ -166,5 +168,9 @@ def get_closed_candle(pair, timeframe):
         pair,
         timeframe
     )
+
+    # Forming candle ko hata do
+    if len(df) > 1:
+        df = df.iloc[:-1].copy()
 
     return df
