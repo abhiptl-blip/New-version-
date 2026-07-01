@@ -159,3 +159,12 @@ def market_is_open(df, timeframe):
         return age < 600
 
     return True
+
+def get_closed_candle(pair, timeframe):
+
+    df = fetch_candles(
+        pair,
+        timeframe
+    )
+
+    return df
