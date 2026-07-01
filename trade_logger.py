@@ -6,12 +6,7 @@ from datetime import timedelta
 LOG_FILE = "data/signals_history.json"
 
 
-def log_signal(
-    data,
-    pair,
-    timeframe,
-    entry_price
-):
+def log_signal(result, pair, timeframe, entry_price, current_df):
 
     if data.get("signal") == "AVOID":
         return
