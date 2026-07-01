@@ -154,17 +154,33 @@ def generate_signal(
 
     # RSI
 
-    if latest["rsi"] > 60:
+    if latest["rsi"] >= 70:
 
-        score += 15
+        score += 20
+
+        reasons.append(
+            "Strong RSI Bullish"
+        )
+
+    elif latest["rsi"] >= 60:
+
+        score += 10
 
         reasons.append(
             "RSI Bullish"
         )
 
-    elif latest["rsi"] < 40:
+    elif latest["rsi"] <= 30:
 
-        score -= 15
+        score -= 20
+
+        reasons.append(
+            "Strong RSI Bearish"
+        )
+
+    elif latest["rsi"] <= 40:
+
+        score -= 10
 
         reasons.append(
             "RSI Bearish"
