@@ -124,7 +124,7 @@ def get_psychology_score(df):
 
     if is_bullish_momentum(latest):
 
-        score += 20
+        score += 15
 
         reasons.append(
             "Bullish Momentum"
@@ -132,7 +132,7 @@ def get_psychology_score(df):
 
     if is_bearish_momentum(latest):
 
-        score -= 20
+        score -= 15
 
         reasons.append(
             "Bearish Momentum"
