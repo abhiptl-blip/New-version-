@@ -2,14 +2,38 @@ def bullish_breakout(df, resistance):
 
     latest = df.iloc[-1]
 
-    return latest["close"] > resistance
+    body = abs(latest["close"] - latest["open"])
+    candle_range = latest["high"] - latest["low"]
+
+    if candle_range == 0:
+        return False
+
+    strong_candle = body / candle_range > 0.6
+
+    return (
+        latest["close"] > resistance
+        and strong_candle
+        and latest["low"] > resistance * 0.999
+    )
 
 
 def bearish_breakout(df, support):
 
     latest = df.iloc[-1]
 
-    return latest["close"] < support
+    body = abs(latest["close"] - latest["open"])
+    candle_range = latest["high"] - latest["low"]
+
+    if candle_range == 0:
+        return False
+
+    strong_candle = body / candle_range > 0.6
+
+    return (
+        latest["close"] < support
+        and strong_candle
+        and latest["high"] < support * 1.001
+    )
 
 
 def fake_bullish_breakout(df, resistance):
@@ -23,6 +47,7 @@ def fake_bullish_breakout(df, resistance):
     return (
         prev["close"] > resistance
         and latest["close"] < resistance
+        and latest["high"] > resistance
     )
 
 
@@ -37,8 +62,8 @@ def fake_bearish_breakout(df, support):
     return (
         prev["close"] < support
         and latest["close"] > support
+        and latest["low"] < support
     )
-
 
 def bullish_retest(df, resistance):
 
