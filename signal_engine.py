@@ -172,24 +172,27 @@ def generate_signal(
 
     # MACD
 
-    if (
-        latest["macd"]
-        > latest["macd_signal"]
-    ):
+    macd_diff = latest["macd"] - latest["macd_signal"]
+
+    if macd_diff > 0.00005:
 
         score += 15
+        reasons.append("Strong MACD Bullish")
 
-        reasons.append(
-            "MACD Bullish"
-        )
+    elif macd_diff > 0:
+
+        score += 8
+        reasons.append("Weak MACD Bullish")
+
+    elif macd_diff < -0.00005:
+
+        score -= 15
+        reasons.append("Strong MACD Bearish")
 
     else:
 
-        score -= 15
-
-        reasons.append(
-            "MACD Bearish"
-        )
+        score -= 8
+        reasons.append("Weak MACD Bearish")
 
     # Candlestick Patterns
 
