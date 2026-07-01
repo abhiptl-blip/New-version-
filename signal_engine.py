@@ -232,26 +232,41 @@ def generate_signal(
 
     # Candlestick Patterns
 
-    if detect_bullish_engulfing(
-        current_df
-    ):
+    if detect_bullish_engulfing(current_df):
 
-        score += 20
+        if trend == "Bullish":
 
-        reasons.append(
-            "Bullish Engulfing"
-        )
+            score += 20
 
-    if detect_bearish_engulfing(
-        current_df
-    ):
+            reasons.append(
+                "Bullish Engulfing"
+            )
 
-        score -= 20
+        else:
 
-        reasons.append(
-            "Bearish Engulfing"
-        )
+            score += 8
 
+            reasons.append(
+                "Weak Bullish Engulfing"
+            )
+
+    if detect_bearish_engulfing(current_df):
+
+        if trend == "Bearish":
+
+            score -= 20
+
+            reasons.append(
+                "Bearish Engulfing"
+            )
+
+        else:
+
+            score -= 8
+
+            reasons.append(
+                "Weak Bearish Engulfing"
+            )
     # Psychology
 
     psychology = (
