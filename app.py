@@ -150,7 +150,8 @@ def signal():
             result,
             pair,
             timeframe,
-            entry_price
+            entry_price,
+            market_data["current"]
         )
 
         record_request()
