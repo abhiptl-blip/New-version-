@@ -98,11 +98,21 @@ def get_sr_score(df):
         atr
     ):
 
-        score += 15
+        if latest["close"] > latest["open"]:
 
-        reasons.append(
-            "Support Bounce"
-        )
+            score += 18
+
+            reasons.append(
+                "Strong Support Bounce"
+            )
+
+        else:
+
+            score += 8
+
+            reasons.append(
+                "Weak Support Bounce"
+            )
 
     if resistance_rejection(
         current_price,
@@ -110,11 +120,21 @@ def get_sr_score(df):
         atr
     ):
 
-        score -= 15
+        if latest["close"] < latest["open"]:
 
-        reasons.append(
-            "Resistance Rejection"
-        )
+            score -= 18
+
+            reasons.append(
+                "Strong Resistance Rejection"
+            )
+
+        else:
+
+            score -= 8
+
+            reasons.append(
+                "Weak Resistance Rejection"
+            )
 
     return {
         "score": score,
