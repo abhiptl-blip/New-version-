@@ -7,7 +7,8 @@ from flask import (
 
 from data_fetcher import (
     get_market_data,
-    market_is_open
+    market_is_open,
+    get_closed_candle
 )
 
 from signal_engine import (
@@ -138,9 +139,12 @@ def signal():
             .iloc[-1]["close"]
         )
 
-        evaluate_signals(
-            market_data["current"]
+        history_df = get_closed_candle(
+            pair,
+            timeframe
         )
+
+        evaluate_signals(history_df)
 
         log_signal(
             result,
