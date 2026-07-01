@@ -79,7 +79,7 @@ def fetch_candles(
         inplace=True
     )
 
-    df["time"] = pd.to_datetime(df["time"])
+    df["time"] = pd.to_datetime(df["time"], utc=True).dt.tz_localize(None)
 
     print(df.tail(3)[["time", "close"]])
 
