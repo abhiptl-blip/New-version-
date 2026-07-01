@@ -1,14 +1,3 @@
-def is_tradeable_candle(candle):
-
-    rng = candle["high"] - candle["low"]
-    if rng == 0:
-        return False
-
-    body = abs(candle["close"] - candle["open"])
-    body_ratio = body / rng
-
-    return 0.35 <= body_ratio <= 0.80
-
 def candle_body_size(candle):
 
     return abs(
@@ -72,13 +61,13 @@ def is_bullish_momentum(candle):
     if candle["close"] <= candle["open"]:
         return False
 
-    rng = candle["high"] - candle["low"]
+    body = candle_body_size(candle)
+    rng = candle_range(candle)
+
     if rng == 0:
         return False
 
-    body = candle["close"] - candle["open"]
-
-    return (body / rng) >= 0.60
+    return (body / rng) >= 0.70
 
 
 def is_bearish_momentum(candle):
@@ -86,48 +75,43 @@ def is_bearish_momentum(candle):
     if candle["close"] >= candle["open"]:
         return False
 
-    rng = candle["high"] - candle["low"]
+    body = candle_body_size(candle)
+    rng = candle_range(candle)
+
     if rng == 0:
         return False
 
-    body = candle["open"] - candle["close"]
-
-    return (body / rng) >= 0.60
+    return (body / rng) >= 0.70
 
 
 def is_bullish_rejection(candle):
 
-    body = abs(candle["close"] - candle["open"])
-    lower_wick = min(candle["open"], candle["close"]) - candle["low"]
+    lw = lower_wick(candle)
+    body = candle_body_size(candle)
 
-    return (
-        lower_wick > body * 2
-        and candle["close"] > candle["open"]
-    )
+    return lw > body * 2
 
 
 def is_bearish_rejection(candle):
 
-    body = abs(candle["close"] - candle["open"])
-    upper_wick = candle["high"] - max(candle["open"], candle["close"])
+    uw = upper_wick(candle)
+    body = candle_body_size(candle)
 
-    return (
-        upper_wick > body * 2
-        and candle["close"] < candle["open"]
-    )
+    return uw > body * 2
 
 
 def is_exhaustion_candle(candle):
 
-    rng = candle["high"] - candle["low"]
+    rng = candle_range(candle)
+
     if rng == 0:
         return False
 
-    body = abs(candle["close"] - candle["open"])
+    body = candle_body_size(candle)
 
-    body_ratio = body / rng
-
-    return body_ratio < 0.25
+    return (
+        body / rng
+    ) < 0.15
 
 
 def get_psychology_score(df):
@@ -135,30 +119,48 @@ def get_psychology_score(df):
     latest = df.iloc[-1]
 
     score = 0
+
     reasons = []
 
-    if not is_tradeable_candle(latest):
-        return {"score": 0, "reasons": ["No Trade Candle"]}
-
     if is_bullish_momentum(latest):
+
         score += 20
-        reasons.append("Bullish Momentum")
 
-    elif is_bearish_momentum(latest):
+        reasons.append(
+            "Bullish Momentum"
+        )
+
+    if is_bearish_momentum(latest):
+
         score -= 20
-        reasons.append("Bearish Momentum")
 
-    elif is_bullish_rejection(latest):
+        reasons.append(
+            "Bearish Momentum"
+        )
+
+    if is_bullish_rejection(latest):
+
         score += 15
-        reasons.append("Bullish Rejection")
 
-    elif is_bearish_rejection(latest):
+        reasons.append(
+            "Bullish Rejection"
+        )
+
+    if is_bearish_rejection(latest):
+
         score -= 15
-        reasons.append("Bearish Rejection")
 
-    elif is_exhaustion_candle(latest):
+        reasons.append(
+            "Bearish Rejection"
+        )
+
+    if is_exhaustion_candle(latest):
+
         score -= 10
-        reasons.append("Exhaustion Candle")
+
+        reasons.append(
+            "Exhaustion Candle"
+        )
 
     return {
         "score": score,
