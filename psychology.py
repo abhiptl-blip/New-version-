@@ -156,7 +156,7 @@ def get_psychology_score(df):
 
     if is_exhaustion_candle(latest):
 
-        score -= 10
+        score -= 15
 
         reasons.append(
             "Exhaustion Candle"
