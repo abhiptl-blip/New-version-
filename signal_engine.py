@@ -45,21 +45,21 @@ def prepare_indicators(df):
 
 
 # -----------------------------
-# TREND
+# TREND DETECTION
 # -----------------------------
 def detect_trend(latest):
 
     if latest["ema20"] > latest["ema50"] > latest["ema200"]:
         return "Bullish"
 
-    if latest["ema20"] < latest["ema50"] < latest["ema200"]:
+    elif latest["ema20"] < latest["ema50"] < latest["ema200"]:
         return "Bearish"
 
     return "Neutral"
 
 
 # -----------------------------
-# MAIN SIGNAL ENGINE (SAFE SCORING)
+# MAIN SIGNAL ENGINE (OLD STABLE)
 # -----------------------------
 def generate_signal(current_df, higher_df):
 
@@ -73,9 +73,7 @@ def generate_signal(current_df, higher_df):
 
     trend = detect_trend(latest)
 
-    # -----------------------------
-    # TREND SCORE
-    # -----------------------------
+    # Trend score
     if trend == "Bullish":
         score += 20
         reasons.append("Bullish Trend")
@@ -84,9 +82,7 @@ def generate_signal(current_df, higher_df):
         score -= 20
         reasons.append("Bearish Trend")
 
-    # -----------------------------
     # RSI
-    # -----------------------------
     if latest["rsi"] > 55:
         score += 10
         reasons.append("RSI Bullish")
@@ -95,9 +91,7 @@ def generate_signal(current_df, higher_df):
         score -= 10
         reasons.append("RSI Bearish")
 
-    # -----------------------------
     # MACD
-    # -----------------------------
     if latest["macd"] > latest["macd_signal"]:
         score += 10
         reasons.append("MACD Bullish")
@@ -106,9 +100,7 @@ def generate_signal(current_df, higher_df):
         score -= 10
         reasons.append("MACD Bearish")
 
-    # -----------------------------
-    # ADX (trend strength)
-    # -----------------------------
+    # ADX
     if latest["adx"] > 20:
         score += 10
         reasons.append("Strong Trend")
@@ -117,64 +109,44 @@ def generate_signal(current_df, higher_df):
         score -= 10
         reasons.append("Weak Trend")
 
-    # -----------------------------
-    # BREAKOUT
-    # -----------------------------
+    # Breakout
     breakout = get_breakout_score(current_df, None, None)
     score += breakout["score"]
     reasons.extend(breakout["reasons"])
 
-    # -----------------------------
-    # MULTI TIMEFRAME
-    # -----------------------------
+    # Multi timeframe
     mtf = get_multi_timeframe_score(current_df, higher_df)
     score += mtf["score"]
     reasons.extend(mtf["reasons"])
 
-    # -----------------------------
-    # SUPPORT RESISTANCE
-    # -----------------------------
+    # Support resistance
     sr = get_sr_score(current_df)
     score += sr["score"]
     reasons.extend(sr["reasons"])
 
-    # -----------------------------
-    # SESSION FILTER
-    # -----------------------------
+    # Session
     session = get_session_score()
     score += session["score"]
     reasons.extend(session["reasons"])
 
-    # -----------------------------
-    # PSYCHOLOGY
-    # -----------------------------
+    # Psychology
     psy = get_psychology_score(latest.to_frame().T)
     score += psy["score"]
     reasons.extend(psy["reasons"])
 
-    # -----------------------------
-    # FINAL SIGNAL LOGIC
-    # -----------------------------
+    # Final signal
     if score >= 50:
         signal = "CALL"
-
     elif score <= -50:
         signal = "PUT"
-
     else:
         signal = "AVOID"
 
-    # -----------------------------
-    # CONFIDENCE
-    # -----------------------------
     confidence = min(
         CONFIDENCE_MAX,
         max(CONFIDENCE_MIN, abs(score))
     )
 
-    # -----------------------------
-    # OUTPUT
-    # -----------------------------
     return {
         "signal": signal,
         "confidence": confidence,
