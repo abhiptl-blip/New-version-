@@ -140,7 +140,7 @@ def get_psychology_score(df):
 
     if is_bullish_rejection(latest):
 
-        score += 15
+        score += 18
 
         reasons.append(
             "Bullish Rejection"
@@ -148,7 +148,7 @@ def get_psychology_score(df):
 
     if is_bearish_rejection(latest):
 
-        score -= 15
+        score -= 18
 
         reasons.append(
             "Bearish Rejection"
