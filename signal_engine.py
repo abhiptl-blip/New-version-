@@ -15,6 +15,7 @@ from config import CONFIDENCE_MIN, CONFIDENCE_MAX
 # INDICATORS
 # -----------------------------
 def prepare_indicators(df):
+
     close = df["close"]
 
     df["ema20"] = EMAIndicator(close, window=20).ema_indicator()
@@ -33,7 +34,10 @@ def prepare_indicators(df):
     df["atr"] = atr.average_true_range()
 
     adx = ADXIndicator(
-        high=df["high"], low=df["low"], close=close, window=14
+        high=df["high"],
+        low=df["low"],
+        close=close,
+        window=14
     )
     df["adx"] = adx.adx()
 
@@ -41,74 +45,21 @@ def prepare_indicators(df):
 
 
 # -----------------------------
-# TREND DETECTION
+# TREND
 # -----------------------------
 def detect_trend(latest):
+
     if latest["ema20"] > latest["ema50"] > latest["ema200"]:
         return "Bullish"
-    elif latest["ema20"] < latest["ema50"] < latest["ema200"]:
+
+    if latest["ema20"] < latest["ema50"] < latest["ema200"]:
         return "Bearish"
+
     return "Neutral"
 
 
 # -----------------------------
-# CONFIRMATION ENGINE
-# -----------------------------
-def get_confirmations(latest, trend, breakout, mtf, sr):
-
-    confirmations = 0
-
-    # Trend
-    if trend == "Bullish":
-        confirmations += 1
-    elif trend == "Bearish":
-        confirmations -= 1
-
-    # RSI
-    if latest["rsi"] > 55:
-        confirmations += 1
-    elif latest["rsi"] < 45:
-        confirmations -= 1
-
-    # MACD
-    if latest["macd"] > latest["macd_signal"]:
-        confirmations += 1
-    else:
-        confirmations -= 1
-
-    # ADX filter (important)
-    if latest["adx"] > 20:
-        confirmations += 1
-    else:
-        confirmations -= 1
-
-    # Breakout
-    if breakout["score"] > 10:
-        confirmations += 1
-    elif breakout["score"] < -10:
-        confirmations -= 1
-
-    # Multi timeframe
-    if mtf["score"] > 10:
-        confirmations += 1
-    elif mtf["score"] < -10:
-        confirmations -= 1
-
-    # Support/Resistance
-    if sr["score"] > 0:
-        confirmations += 1
-    elif sr["score"] < 0:
-        confirmations -= 1
-
-    # Psychology
-    psy = get_psychology_score(latest.to_frame().T)
-    confirmations += 1 if psy["score"] > 0 else -1
-
-    return confirmations
-
-
-# -----------------------------
-# MAIN SIGNAL ENGINE
+# MAIN SIGNAL ENGINE (SAFE SCORING)
 # -----------------------------
 def generate_signal(current_df, higher_df):
 
@@ -117,46 +68,99 @@ def generate_signal(current_df, higher_df):
 
     latest = current_df.iloc[-1]
 
-    # -----------------------------
-    # COMPONENT SCORES
-    # -----------------------------
-    breakout = get_breakout_score(
-        current_df, None, None
-    )
+    score = 0
+    reasons = []
 
-    mtf = get_multi_timeframe_score(
-        current_df, higher_df
-    )
-
-    sr = get_sr_score(current_df)
-
-    session = get_session_score()
-
-    # -----------------------------
-    # TREND
-    # -----------------------------
     trend = detect_trend(latest)
 
     # -----------------------------
-    # CONFIRMATIONS
+    # TREND SCORE
     # -----------------------------
-    confirmations = get_confirmations(
-        latest,
-        trend,
-        breakout,
-        mtf,
-        sr
-    )
+    if trend == "Bullish":
+        score += 20
+        reasons.append("Bullish Trend")
 
-    confirmations += 1 if session["score"] > 0 else -1
+    elif trend == "Bearish":
+        score -= 20
+        reasons.append("Bearish Trend")
+
+    # -----------------------------
+    # RSI
+    # -----------------------------
+    if latest["rsi"] > 55:
+        score += 10
+        reasons.append("RSI Bullish")
+
+    elif latest["rsi"] < 45:
+        score -= 10
+        reasons.append("RSI Bearish")
+
+    # -----------------------------
+    # MACD
+    # -----------------------------
+    if latest["macd"] > latest["macd_signal"]:
+        score += 10
+        reasons.append("MACD Bullish")
+
+    else:
+        score -= 10
+        reasons.append("MACD Bearish")
+
+    # -----------------------------
+    # ADX (trend strength)
+    # -----------------------------
+    if latest["adx"] > 20:
+        score += 10
+        reasons.append("Strong Trend")
+
+    else:
+        score -= 10
+        reasons.append("Weak Trend")
+
+    # -----------------------------
+    # BREAKOUT
+    # -----------------------------
+    breakout = get_breakout_score(current_df, None, None)
+    score += breakout["score"]
+    reasons.extend(breakout["reasons"])
+
+    # -----------------------------
+    # MULTI TIMEFRAME
+    # -----------------------------
+    mtf = get_multi_timeframe_score(current_df, higher_df)
+    score += mtf["score"]
+    reasons.extend(mtf["reasons"])
+
+    # -----------------------------
+    # SUPPORT RESISTANCE
+    # -----------------------------
+    sr = get_sr_score(current_df)
+    score += sr["score"]
+    reasons.extend(sr["reasons"])
+
+    # -----------------------------
+    # SESSION FILTER
+    # -----------------------------
+    session = get_session_score()
+    score += session["score"]
+    reasons.extend(session["reasons"])
+
+    # -----------------------------
+    # PSYCHOLOGY
+    # -----------------------------
+    psy = get_psychology_score(latest.to_frame().T)
+    score += psy["score"]
+    reasons.extend(psy["reasons"])
 
     # -----------------------------
     # FINAL SIGNAL LOGIC
     # -----------------------------
-    if confirmations >= 4:
+    if score >= 50:
         signal = "CALL"
-    elif confirmations <= -4:
+
+    elif score <= -50:
         signal = "PUT"
+
     else:
         signal = "AVOID"
 
@@ -165,17 +169,17 @@ def generate_signal(current_df, higher_df):
     # -----------------------------
     confidence = min(
         CONFIDENCE_MAX,
-        max(CONFIDENCE_MIN, abs(confirmations) * 20)
+        max(CONFIDENCE_MIN, abs(score))
     )
 
     # -----------------------------
-    # FINAL OUTPUT
+    # OUTPUT
     # -----------------------------
     return {
         "signal": signal,
         "confidence": confidence,
         "trend": trend,
-        "confirmations": confirmations,
+        "score": score,
 
         "ema20": float(latest["ema20"]),
         "ema50": float(latest["ema50"]),
@@ -190,5 +194,5 @@ def generate_signal(current_df, higher_df):
         "support": sr["support"],
         "resistance": sr["resistance"],
 
-        "reasons": session["reasons"][:5]
+        "reasons": reasons[:10]
     }
