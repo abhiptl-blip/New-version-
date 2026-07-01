@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from datetime import timedelta
 
 LOG_FILE = "data/signals_history.json"
 
@@ -27,11 +28,16 @@ def log_signal(
 
         "time": datetime.utcnow().isoformat(),
 
-        "expiry_time": (
-            datetime.utcnow() +
-            timedelta(
-                minutes=1 if timeframe == "1min" else 5
-            )
+
+    last_candle = current_df.iloc[-1]["time"]
+
+    if timeframe == "1min":
+        expiry_time = last_candle + timedelta(minutes=1)
+    else:
+        expiry_time = last_candle + timedelta(minutes=5)
+
+    expiry_time = expiry_time.replace(second=0, microsecond=0)
+
         ).isoformat(),
 
         "expiry_interval": timeframe,
