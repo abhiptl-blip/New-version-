@@ -3,30 +3,21 @@ import os
 
 from datetime import datetime
 
-LOG_FILE = "data/signals_history.json"
+from datetime import timedelta
 
+LOG_FILE = "data/signals_history.json"
 
 def candle_time_match(candle_time, expiry_time, timeframe):
 
-    if timeframe == "1min":
+    candle_time = candle_time.replace(second=0, microsecond=0)
+    expiry_time = expiry_time.replace(second=0, microsecond=0)
 
-        return (
-            candle_time.year == expiry_time.year
-            and candle_time.month == expiry_time.month
-            and candle_time.day == expiry_time.day
-            and candle_time.hour == expiry_time.hour
-            and candle_time.minute == expiry_time.minute
-        )
+    if timeframe == "1min":
+        return candle_time == expiry_time
 
     return (
-
-        candle_time.year == expiry_time.year
-        and candle_time.month == expiry_time.month
-        and candle_time.day == expiry_time.day
-        and candle_time.hour == expiry_time.hour
-        and (candle_time.minute // 5)
-        == (expiry_time.minute // 5)
-
+        abs(candle_time - expiry_time)
+        < timedelta(minutes=5)
     )
 
 
