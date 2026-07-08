@@ -124,83 +124,47 @@ def generate_signal(
 
     # EMA Trend
 
-    ema20 = latest["ema20"]
-    ema50 = latest["ema50"]
-    ema200 = latest["ema200"]
+    if (
+        latest["ema20"]
+        > latest["ema50"]
+        > latest["ema200"]
+    ):
 
-    if ema20 > ema50 > ema200:
-
-        gap = ema20 - ema50
-
-        if gap > latest["atr"] * 0.30:
-
-            score += 30
-
-            reasons.append(
-                "Strong Uptrend"
-            )
-
-        else:
-
-            score += 20
-
-            reasons.append(
-                "Weak Uptrend"
-            )
+        score += 25
 
         trend = "Bullish"
 
-    elif ema20 < ema50 < ema200:
+        reasons.append(
+            "Strong Uptrend"
+        )
 
-        gap = ema50 - ema20
+    elif (
+        latest["ema20"]
+        < latest["ema50"]
+        < latest["ema200"]
+    ):
 
-        if gap > latest["atr"] * 0.30:
-
-            score -= 30
-
-            reasons.append(
-                "Strong Downtrend"
-            )
-
-        else:
-
-            score -= 20
-
-            reasons.append(
-                "Weak Downtrend"
-            )
+        score -= 25
 
         trend = "Bearish"
 
-    # RSI
-
-    if latest["rsi"] >= 70:
-
-        score += 20
-
         reasons.append(
-            "Strong RSI Bullish"
+            "Strong Downtrend"
         )
 
-    elif latest["rsi"] >= 60:
+    # RSI
 
-        score += 10
+    if latest["rsi"] > 60:
+
+        score += 15
 
         reasons.append(
             "RSI Bullish"
         )
 
-    elif latest["rsi"] <= 30:
+    elif latest["rsi"] < 40:
 
-        score -= 20
-
-        reasons.append(
-            "Strong RSI Bearish"
-        )
-
-    elif latest["rsi"] <= 40:
-
-        score -= 10
+        score -= 15
 
         reasons.append(
             "RSI Bearish"
@@ -208,65 +172,47 @@ def generate_signal(
 
     # MACD
 
-    macd_diff = latest["macd"] - latest["macd_signal"]
-
-    if macd_diff > 0.00005:
+    if (
+        latest["macd"]
+        > latest["macd_signal"]
+    ):
 
         score += 15
-        reasons.append("Strong MACD Bullish")
 
-    elif macd_diff > 0:
-
-        score += 8
-        reasons.append("Weak MACD Bullish")
-
-    elif macd_diff < -0.00005:
-
-        score -= 15
-        reasons.append("Strong MACD Bearish")
+        reasons.append(
+            "MACD Bullish"
+        )
 
     else:
 
-        score -= 8
-        reasons.append("Weak MACD Bearish")
+        score -= 15
+
+        reasons.append(
+            "MACD Bearish"
+        )
 
     # Candlestick Patterns
 
-    if detect_bullish_engulfing(current_df):
+    if detect_bullish_engulfing(
+        current_df
+    ):
 
-        if trend == "Bullish":
+        score += 20
 
-            score += 20
+        reasons.append(
+            "Bullish Engulfing"
+        )
 
-            reasons.append(
-                "Bullish Engulfing"
-            )
+    if detect_bearish_engulfing(
+        current_df
+    ):
 
-        else:
+        score -= 20
 
-            score += 8
+        reasons.append(
+            "Bearish Engulfing"
+        )
 
-            reasons.append(
-                "Weak Bullish Engulfing"
-            )
-
-    if detect_bearish_engulfing(current_df):
-
-        if trend == "Bearish":
-
-            score -= 20
-
-            reasons.append(
-                "Bearish Engulfing"
-            )
-
-        else:
-
-            score -= 8
-
-            reasons.append(
-                "Weak Bearish Engulfing"
-            )
     # Psychology
 
     psychology = (
@@ -449,7 +395,9 @@ def generate_signal(
     if score <= -60 and trend_higher != "Bearish":
         mtf_block = True
 
-    ...
+    if mtf_block:
+
+        signal = "AVOID"
 
     elif score >= 60:
 
